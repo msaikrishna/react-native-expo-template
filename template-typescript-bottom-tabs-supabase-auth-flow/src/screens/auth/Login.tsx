@@ -30,10 +30,11 @@ export default function ({
 
   async function login() {
     setLoading(true);
-    const { user, error } = await supabase.auth.signIn({
-      email: email,
-      password: password,
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
+    const user = data.user;
     if (!error && !user) {
       setLoading(false);
       alert("Check your email for the login link!");
@@ -43,6 +44,16 @@ export default function ({
       alert(error.message);
     }
   }
+
+  async function loginWithGoogle() {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+    if (error) {
+      setLoading(false);
+      alert(error.message);
+    }
+  }
+
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
       <Layout>
@@ -116,6 +127,19 @@ export default function ({
               }}
               style={{
                 marginTop: 20,
+              }}
+              disabled={loading}
+            />
+
+            <Button
+              text={loading ? "Loading" : "Sign in with Google"}
+              onPress={loginWithGoogle}
+              style={{
+                marginTop: 10,
+                backgroundColor: "#4285F4",
+              }}
+              textStyle={{
+                color: "#fff",
               }}
               disabled={loading}
             />
