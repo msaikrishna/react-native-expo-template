@@ -18,18 +18,37 @@ const AuthProvider = (props: Props) => {
 	const [session, setSession] = useState<Session | null>(null);
 
 	useEffect(() => {
-		const session = supabase.auth.session();
-		setSession(session);
-		setUser(session ? true : false);
+		supabase.auth.getSession().then(({ data: { session } }) => {
+			console.log('AuthProvider useEffect: user', user, 'session', session);
+			if (session) {
+				console.log('Session details:', {
+					access_token: session.access_token,
+					user: session.user
+				});
+			} else {
+				console.log('Session is null');
+			}
+			setSession(session);
+			setUser(session ? true : false);
+		});
 		const { data: authListener } = supabase.auth.onAuthStateChange(
 			async (event, session) => {
 				console.log(`Supabase auth event: ${event}`);
+				console.log('Auth state change session:', session);
+				if (session) {
+					console.log('Auth state change session details:', {
+						access_token: session.access_token,
+						user: session.user
+					});
+				} else {
+					console.log('Auth state change session is null');
+				}
 				setSession(session);
 				setUser(session ? true : false);
 			}
 		);
 		return () => {
-			authListener!.unsubscribe();
+			authListener.subscription.unsubscribe();
 		};
 	}, [user]);
 
